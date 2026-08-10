@@ -85,10 +85,31 @@ function fswpPerformSearch(keyword, resultsDiv, parentElement) {
     link.onclick = (event) => {
       event.preventDefault();
       const el = m.node.parentElement;
-      el.style.transition = "background 0.4s";
-      el.style.background = "yellow";
-      setTimeout(() => el.style.background = "", 800);
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      // 清除之前的高亮
+      document.querySelectorAll('.fswp-highlight').forEach(el => {
+        el.classList.remove('fswp-highlight');
+        el.style.background = '';
+      });
+
+      // 高亮当前条目，持续5秒
+      el.classList.add('fswp-highlight');
+      el.style.transition = 'background 0.3s';
+      el.style.background = '#ffeb3b';
+      el.style.boxShadow = '0 0 15px rgba(255, 235, 59, 0.6)';
+
+      // 滚动到元素位置
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      // 10秒后移除高亮
+      setTimeout(() => {
+        el.classList.remove('fswp-highlight');
+        el.style.background = '';
+        el.style.boxShadow = '';
+      }, 8000);
+
+      // 隐藏搜索对话框
+      fswpRemoveSearchInterface();
     };
 
     fragment.appendChild(link);
@@ -102,7 +123,7 @@ function fswpPerformSearch(keyword, resultsDiv, parentElement) {
 // 搜索入口函数
 function fswpJumpToMatchedTextNode(parentElement) {
   // 直接获取原始值
-  const keyword = this.value.replace(/[^A-Za-z ]/g, '');
+  const keyword = this.value.replace(/[^A-Za-z ]/g, '').trim();
   const resultsDiv = document.getElementById("fswpResults");
   if (!resultsDiv) {
     return;
