@@ -111,6 +111,9 @@ function fswpPerformSearch(keyword, resultsDiv, parentElement) {
 
       // 隐藏搜索对话框
       fswpRemoveSearchInterface();
+
+      // 滚动结果列表中的当前项到可视区域
+      link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     };
 
     fragment.appendChild(link);
