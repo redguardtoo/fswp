@@ -604,6 +604,17 @@ function fswpToggleSearchInterface(parentElement = document.body) {
   }
 }
 
+// 键盘快捷键
+document.addEventListener('keydown', function(e) {
+  // ESC 键关闭
+  if (e.key === 'Escape') {
+    const container = document.getElementById('fswpSearchContainer');
+    if (container) {
+      fswpRemoveSearchInterface();
+    }
+  }
+});
+
 const fswpPinyinInitialMap = {
   a: "阿啊呵腌嗄锕吖爱哀挨碍埃癌艾唉矮哎皑蔼隘暧霭捱嗳瑷嫒锿嗌砹安案按暗岸俺谙黯鞍氨庵桉鹌胺铵揞犴埯昂肮盎奥澳傲熬敖凹袄懊坳嗷拗鏖骜鳌翱岙廒遨獒聱媪螯鏊",
   b: "把八吧巴爸罢拔叭芭霸靶扒疤跋坝笆耙粑灞茇菝魃岜捌钯鲅百白败摆伯拜柏呗掰捭佰稗办半版般班板伴搬扮斑颁瓣拌扳绊阪坂瘢钣舨癍帮邦棒膀榜傍绑磅谤浜梆镑蚌蒡报保包暴宝抱薄胞爆鲍饱堡曝刨褒豹雹苞葆褓孢煲鸨龅趵被北备背悲辈杯倍贝碑卑蓓惫悖狈呗焙鹎孛邶陂埤碚褙鐾鞴萆钡本奔笨苯夯畚贲锛坌崩甭绷蹦迸甏泵嘣蚌比必笔毕币避闭鼻彼逼壁臂弊碧鄙毙蔽庇匕璧敝陛弼篦婢愎痹妣濞铋裨俾髀萆薜哔狴庳秕滗舭毖吡嬖蓖贲畀荸埤筚箅芘襞跸荜编便边变遍辩辨贬鞭辫扁卞砭苄匾汴蝙笾碥窆褊弁鳊忭煸缏表标彪镖膘骠镳裱杓飙瘭髟飚婊飑鳔别憋瘪蹩鳖宾滨彬斌鬓缤殡濒槟摈膑傧玢豳髌镔并病兵冰饼丙柄秉炳禀邴摒波播博伯勃薄拨泊柏剥玻驳卜脖搏膊饽簸掰舶跛礴菠帛铂钵渤檗钹擘箔趵孛鹁踣亳啵不部布步补捕怖卜簿哺埔卟埠钸逋醭晡瓿钚",
