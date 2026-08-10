@@ -1,6 +1,3 @@
-// 防抖定时器
-let fswpDebounceTimeout = null;
-
 // 转义正则表达式特殊字符
 function fswpEscapeForCharClass(s) {
   return s.replace(/[-\\\]^]/g, m => "\\" + m);
@@ -20,20 +17,31 @@ function fswpExpandPatternToRegex(pattern) {
   return new RegExp(regex, 'i');
 }
 
-// 模糊匹配
-function fswpFuzzyMatch(text, pattern) {
-  const re = fswpExpandPatternToRegex(pattern);
-  return re.test(text);
-}
-
 // 获取所有可见文本节点
 function fswpGetTextNodes(root) {
   let walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode(node) {
       if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
       if (!node.parentElement) return NodeFilter.FILTER_REJECT;
+
+      // reject hidden nodes
       let style = window.getComputedStyle(node.parentElement);
-      if (style.display === "none" || style.visibility === "hidden") return NodeFilter.FILTER_REJECT;
+      if (style.display === "none" || style.visibility === "hidden"){
+        return NodeFilter.FILTER_REJECT;
+      }
+
+      // reject search input itself
+      if (node.parentElement.closest('#fswpSearchContainer')) {
+        return NodeFilter.FILTER_REJECT;
+      }
+
+      // reject css/js notes
+      const parent = node.parentElement;
+      const tag = parent.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT') {
+        return NodeFilter.FILTER_REJECT;
+      }
+
       return NodeFilter.FILTER_ACCEPT;
     }
   });
@@ -47,9 +55,10 @@ function fswpPerformSearch(keyword, resultsDiv, parentElement) {
   const textNodes = fswpGetTextNodes(parentElement);
   let matches = [];
 
+  const re = fswpExpandPatternToRegex(keyword);
   textNodes.forEach(node => {
     const text = node.nodeValue.trim();
-    if (fswpFuzzyMatch(text, keyword)) {
+    if (re.test(text)) {
       matches.push({ node, text });
     }
   });
@@ -67,13 +76,14 @@ function fswpPerformSearch(keyword, resultsDiv, parentElement) {
 
   matches.forEach((m) => {
     const link = document.createElement("a");
-    link.href = "javascript:void(0)";
+    link.href = "#";
 
     // 截断过长的文本
     const displayText = m.text.length > 100 ? m.text.substring(0, 100) + "..." : m.text;
     link.textContent = displayText;
 
-    link.onclick = () => {
+    link.onclick = (event) => {
+      event.preventDefault();
       const el = m.node.parentElement;
       el.style.transition = "background 0.4s";
       el.style.background = "yellow";
@@ -88,13 +98,9 @@ function fswpPerformSearch(keyword, resultsDiv, parentElement) {
 
   resultsDiv.appendChild(fragment);
 }
-// 搜索入口函数（带防抖）
-function fswpJumpToMatchedTextNode(parentElement) {
-  // 清除之前的防抖定时器
-  if (fswpDebounceTimeout) {
-    clearTimeout(fswpDebounceTimeout);
-  }
 
+// 搜索入口函数
+function fswpJumpToMatchedTextNode(parentElement) {
   // 直接获取原始值
   const keyword = this.value.replace(/[^A-Za-z ]/g, '');
   const resultsDiv = document.getElementById("fswpResults");
@@ -116,10 +122,7 @@ function fswpJumpToMatchedTextNode(parentElement) {
   // 显示加载提示
   resultsDiv.innerHTML = "<p>搜索中...</p>";
 
-  // 设置防抖，延迟执行搜索
-  fswpDebounceTimeout = setTimeout(() => {
-    fswpPerformSearch(keyword, resultsDiv, parentElement);
-  }, 300);
+  fswpPerformSearch(keyword, resultsDiv, parentElement);
 }
 
 // 防抖函数
@@ -156,8 +159,15 @@ function fswpCreateSearchInterface(parentElement = document.body) {
 
   // 创建输入框
   const input = document.createElement('input');
+  input.addEventListener('input', function() {
+    this.value = this.value.replace(/[^A-Za-z ]/g, '');
+  });
   input.id = 'fswpInput';
-  input.placeholder = '输入搜索内容 (支持英文和拼音首字母)...';
+  input.type = 'search';
+  input.autocomplete = 'off';
+  input.spellcheck = false;
+  input.placeholder = '输入英文或拼音首字母...';
+
   input.style.width = '300px';
   input.style.padding = '8px 12px';
   input.style.fontSize = '14px';
@@ -265,12 +275,6 @@ function fswpCreateSearchInterface(parentElement = document.body) {
 
 // 移除搜索界面
 function fswpRemoveSearchInterface() {
-  // 清理防抖定时器
-  if (fswpDebounceTimeout) {
-    clearTimeout(fswpDebounceTimeout);
-    fswpDebounceTimeout = null;
-  }
-
   // 获取元素
   const container = document.getElementById('fswpSearchContainer');
 
