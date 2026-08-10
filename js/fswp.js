@@ -177,6 +177,7 @@ function fswpCreateSearchInterface(parentElement = document.body) {
   container.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
   container.style.padding = '10px';
   container.style.minWidth = '320px';
+  container.style.maxWidth = 'calc(100% - 32px)'; // 确保在手机上不溢出
 
   // 创建输入框
   const input = document.createElement('input');
@@ -189,9 +190,9 @@ function fswpCreateSearchInterface(parentElement = document.body) {
   input.spellcheck = false;
   input.placeholder = '输入英文或拼音首字母...';
 
-  input.style.width = '300px';
+  input.style.width = '100%';
   input.style.padding = '8px 12px';
-  input.style.fontSize = '14px';
+  input.style.fontSize = '16px'; // iPhone 上防止自动缩放
   input.style.border = '1px solid #ddd';
   input.style.borderRadius = '4px';
   input.style.outline = 'none';
@@ -286,10 +287,59 @@ function fswpCreateSearchInterface(parentElement = document.body) {
   // 添加事件监听
   input.addEventListener('input', debouncedSearch);
 
-  // 设置焦点
+  // ========== 自动获取焦点的增强处理 ==========
+  // 针对 iPhone 等移动设备，需要多次尝试聚焦
+  function attemptFocus(retries = 5) {
+    if (retries <= 0) {
+      console.log('自动聚焦失败');
+      return;
+    }
+    
+    try {
+      // 先确保 input 可见且可交互
+      input.focus();
+      
+      // 检查是否真的获得了焦点
+      if (document.activeElement === input) {
+        console.log('自动聚焦成功');
+        // 在移动端，聚焦后可能需要延迟一下再调用 click 来唤起键盘
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+          setTimeout(() => {
+            input.click();
+          }, 100);
+        }
+        return;
+      }
+    } catch(e) {
+      // 忽略错误
+    }
+    
+    // 如果失败，重试
+    setTimeout(() => {
+      attemptFocus(retries - 1);
+    }, 200);
+  }
+
+  // 初始聚焦尝试
   setTimeout(function() {
-    input.focus();
-  }, 50);
+    attemptFocus(5);
+  }, 300);
+
+  // 额外：用户点击页面其他地方时，如果容器可见，尝试重新聚焦
+  document.addEventListener('click', function onDocumentClick(e) {
+    const container = document.getElementById('fswpSearchContainer');
+    if (!container) {
+      document.removeEventListener('click', onDocumentClick);
+      return;
+    }
+    
+    // 如果点击的是搜索容器内部，确保输入框保持焦点
+    if (container.contains(e.target) && e.target !== input) {
+      setTimeout(() => {
+        input.focus();
+      }, 10);
+    }
+  });
 
   console.log('搜索界面已创建');
 }
