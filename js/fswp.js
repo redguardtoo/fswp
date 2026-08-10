@@ -90,6 +90,7 @@ function fswpPerformSearch(keyword, resultsDiv, parentElement) {
       document.querySelectorAll('.fswp-highlight').forEach(el => {
         el.classList.remove('fswp-highlight');
         el.style.background = '';
+        el.style.boxShadow = '';
       });
 
       // 高亮当前条目，持续5秒
@@ -101,7 +102,7 @@ function fswpPerformSearch(keyword, resultsDiv, parentElement) {
       // 滚动到元素位置
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-      // 10秒后移除高亮
+      // 移除高亮
       setTimeout(() => {
         el.classList.remove('fswp-highlight');
         el.style.background = '';
@@ -158,6 +159,11 @@ function fswpDebounce(func, delay) {
   };
 }
 
+// 检查是否为移动设备
+function fswpIsMobile() {
+  return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile/i.test(navigator.userAgent);
+}
+
 // 创建搜索界面
 function fswpCreateSearchInterface(parentElement = document.body) {
   // 避免重复创建
@@ -166,18 +172,39 @@ function fswpCreateSearchInterface(parentElement = document.body) {
     return;
   }
 
+  const isMobile = fswpIsMobile();
+
   // 创建容器 div
   const container = document.createElement('div');
   container.id = 'fswpSearchContainer';
   container.style.position = 'fixed';
-  container.style.top = '16px';
-  container.style.right = '16px';
   container.style.zIndex = '9999';
   container.style.backgroundColor = 'white';
   container.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
   container.style.padding = '10px';
-  container.style.minWidth = '320px';
-  container.style.maxWidth = 'calc(100% - 32px)'; // 确保在手机上不溢出
+  container.style.boxSizing = 'border-box';
+  
+  // 根据设备类型设置位置和宽度
+  if (isMobile) {
+    // 移动端：贴顶，全屏宽度
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.right = '0';
+    container.style.width = '100%';
+    container.style.maxWidth = '100%';
+    container.style.borderRadius = '0';
+    container.style.padding = '12px 16px';
+    container.style.maxHeight = '100vh';
+  } else {
+    // 桌面端：居中，固定宽度
+    container.style.top = '50%';
+    container.style.left = '50%';
+    container.style.transform = 'translate(-50%, -50%)';
+    container.style.width = '500px';
+    container.style.maxWidth = '90%';
+    container.style.borderRadius = '8px';
+    container.style.maxHeight = '80vh';
+  }
 
   // 创建输入框
   const input = document.createElement('input');
@@ -192,7 +219,7 @@ function fswpCreateSearchInterface(parentElement = document.body) {
 
   input.style.width = '100%';
   input.style.padding = '8px 12px';
-  input.style.fontSize = '16px'; // iPhone 上防止自动缩放
+  input.style.fontSize = isMobile ? '16px' : '14px'; // 移动端防止自动缩放
   input.style.border = '1px solid #ddd';
   input.style.borderRadius = '4px';
   input.style.outline = 'none';
@@ -222,32 +249,32 @@ function fswpCreateSearchInterface(parentElement = document.body) {
   results.id = 'fswpResults';
   results.style.marginTop = '10px';
   results.style.fontSize = '13px';
-  results.style.maxHeight = '300px';
+  results.style.maxHeight = isMobile ? '60vh' : '300px';
   results.style.padding = '4px';
   results.style.overflowY = 'auto';
 
-  // 关闭按钮 - 增大尺寸，更醒目
+  // 关闭按钮
   const closeButton = document.createElement('button');
   closeButton.textContent = '✕';
   closeButton.style.position = 'absolute';
-  closeButton.style.top = '8px';
-  closeButton.style.right = '16px';
+  closeButton.style.top = isMobile ? '12px' : '8px';
+  closeButton.style.right = isMobile ? '16px' : '16px';
   closeButton.style.border = 'none';
-  closeButton.style.background = '#f44336';  // 红色背景
-  closeButton.style.fontSize = '18px';       // 字体更大
-  closeButton.style.fontWeight = 'bold';     // 加粗
+  closeButton.style.background = '#f44336';
+  closeButton.style.fontSize = isMobile ? '20px' : '18px';
+  closeButton.style.fontWeight = 'bold';
   closeButton.style.cursor = 'pointer';
-  closeButton.style.color = 'white';         // 白色文字
+  closeButton.style.color = 'white';
   closeButton.style.padding = '0';
-  closeButton.style.width = '28px';          // 宽度增大
-  closeButton.style.height = '28px';         // 高度增大
+  closeButton.style.width = isMobile ? '32px' : '28px';
+  closeButton.style.height = isMobile ? '32px' : '28px';
   closeButton.style.borderRadius = '50%';
   closeButton.style.display = 'flex';
   closeButton.style.alignItems = 'center';
   closeButton.style.justifyContent = 'center';
 
   closeButton.addEventListener('mouseenter', function() {
-    this.style.backgroundColor = '#d32f2f';  // 悬停时更深的红色
+    this.style.backgroundColor = '#d32f2f';
   });
 
   closeButton.addEventListener('mouseleave', function() {
@@ -261,10 +288,10 @@ function fswpCreateSearchInterface(parentElement = document.body) {
   // 标题
   const title = document.createElement('div');
   title.textContent = '🔍 页面英文模糊搜索和拼音首字母搜索';
-  title.style.fontSize = '14px';
+  title.style.fontSize = isMobile ? '15px' : '14px';
   title.style.fontWeight = 'bold';
   title.style.marginBottom = '8px';
-  title.style.paddingRight = '20px';
+  title.style.paddingRight = isMobile ? '40px' : '20px';
   title.style.color = '#333';
 
   // 组装容器
@@ -288,7 +315,6 @@ function fswpCreateSearchInterface(parentElement = document.body) {
   input.addEventListener('input', debouncedSearch);
 
   // ========== 自动获取焦点的增强处理 ==========
-  // 针对 iPhone 等移动设备，需要多次尝试聚焦
   function attemptFocus(retries = 5) {
     if (retries <= 0) {
       console.log('自动聚焦失败');
@@ -296,14 +322,11 @@ function fswpCreateSearchInterface(parentElement = document.body) {
     }
     
     try {
-      // 先确保 input 可见且可交互
       input.focus();
       
-      // 检查是否真的获得了焦点
       if (document.activeElement === input) {
         console.log('自动聚焦成功');
-        // 在移动端，聚焦后可能需要延迟一下再调用 click 来唤起键盘
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        if (isMobile) {
           setTimeout(() => {
             input.click();
           }, 100);
@@ -314,7 +337,6 @@ function fswpCreateSearchInterface(parentElement = document.body) {
       // 忽略错误
     }
     
-    // 如果失败，重试
     setTimeout(() => {
       attemptFocus(retries - 1);
     }, 200);
@@ -325,7 +347,7 @@ function fswpCreateSearchInterface(parentElement = document.body) {
     attemptFocus(5);
   }, 300);
 
-  // 额外：用户点击页面其他地方时，如果容器可见，尝试重新聚焦
+  // 点击容器内部时保持输入框焦点
   document.addEventListener('click', function onDocumentClick(e) {
     const container = document.getElementById('fswpSearchContainer');
     if (!container) {
@@ -333,7 +355,6 @@ function fswpCreateSearchInterface(parentElement = document.body) {
       return;
     }
     
-    // 如果点击的是搜索容器内部，确保输入框保持焦点
     if (container.contains(e.target) && e.target !== input) {
       setTimeout(() => {
         input.focus();
@@ -346,14 +367,10 @@ function fswpCreateSearchInterface(parentElement = document.body) {
 
 // 移除搜索界面
 function fswpRemoveSearchInterface() {
-  // 获取元素
   const container = document.getElementById('fswpSearchContainer');
-
-  // 移除容器（内部元素和监听器会被垃圾回收）
   if (container) {
     container.remove();
   }
-
   console.log('搜索界面已移除');
 }
 
