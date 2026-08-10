@@ -523,7 +523,94 @@ function fswpCreateSearchInterface(parentElement = document.body) {
     this.style.boxShadow = 'none';
   });
 
-  // 创建结果显示区域
+  // ========== 数字快捷键功能 ==========
+  // 存储当前搜索结果中的链接元素
+  let currentResultLinks = [];
+
+  // 更新当前结果链接列表
+  function fswpUpdateResultLinks() {
+    const resultsDiv = document.getElementById('fswpResults');
+    if (!resultsDiv) {
+      currentResultLinks = [];
+      return;
+    }
+    // 获取所有直接子元素中的 a 标签（排除了 resultCount 等）
+    const links = resultsDiv.querySelectorAll('a');
+    currentResultLinks = Array.from(links);
+  }
+
+  // 根据数字索引点击对应的链接
+  function fswpClickResultByNumber(num) {
+    if (num < 1 || num > 9) return;
+
+    const index = num - 1;
+    if (index < currentResultLinks.length) {
+      const link = currentResultLinks[index];
+      // 模拟点击
+      const clickEvent = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      });
+      link.dispatchEvent(clickEvent);
+    } else {
+      // 提示用户该序号不存在
+      const resultsDiv = document.getElementById('fswpResults');
+      if (resultsDiv) {
+        // 显示临时提示
+        const tip = document.createElement('div');
+        tip.textContent = `⚠️ 只有 ${currentResultLinks.length} 个结果`;
+        tip.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: rgba(0,0,0,0.8);
+          color: white;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          z-index: 10000;
+          animation: fswpFadeOut 1.5s forwards;
+        `;
+        // 添加淡出动画
+        const style = document.createElement('style');
+        style.textContent = `
+          @keyframes fswpFadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; transform: translate(-50%, -60%); }
+          }
+        `;
+        document.head.appendChild(style);
+        document.body.appendChild(tip);
+        setTimeout(() => {
+          tip.remove();
+          style.remove();
+        }, 1500);
+      }
+    }
+  }
+
+  // 键盘事件监听 - 数字键 1-9
+  input.addEventListener('keydown', function(e) {
+    // 只处理数字键 1-9
+    if (e.key >= '1' && e.key <= '9') {
+      // 如果没有按 Ctrl/Cmd/Alt 等修饰键
+      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+        const num = parseInt(e.key);
+        // 更新链接列表
+        fswpUpdateResultLinks();
+        // 尝试点击对应的链接
+        fswpClickResultByNumber(num);
+        // 阻止默认行为（防止数字输入到输入框中）
+        e.preventDefault();
+      }
+    }
+  });
+
+  // 当搜索结果更新时，自动更新链接列表
+  // 通过 MutationObserver 监听结果变化
   const results = document.createElement('div');
   results.id = 'fswpResults';
   results.style.marginTop = '10px';
@@ -532,6 +619,15 @@ function fswpCreateSearchInterface(parentElement = document.body) {
   results.style.padding = '4px';
   results.style.overflowY = 'auto';
   results.setAttribute('role', 'list');
+
+  // 监听 results 的内容变化
+  const observer = new MutationObserver(function() {
+    fswpUpdateResultLinks();
+  });
+  observer.observe(results, {
+    childList: true,
+    subtree: true
+  });
 
   // 组装容器
   container.appendChild(headerContainer);

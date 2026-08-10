@@ -9,7 +9,6 @@
 - **英文模糊搜索**：支持大小写不敏感的英文单词模糊匹配
 - **拼音首字母搜索**：支持汉字拼音首字母搜索（例如输入 `hw` 可匹配“花纹”或“华为”）
 - **快速跳转**：点击搜索结果自动滚动到匹配位置并高亮显示
-- **优雅界面**：固定在页面右上角的搜索面板，带关闭按钮
 - **轻量级**：原生 JavaScript 实现，无需依赖任何第三方库
 
 ---
@@ -149,7 +148,7 @@ fswpToggleSearchInterface(container);
 MIT License
 
 ```
-Copyright (c) 2024
+Copyright (c) 2026
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
