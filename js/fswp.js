@@ -420,6 +420,70 @@ function fswpCreateSearchInterface(parentElement = document.body) {
     container.style.maxHeight = '80vh';
   }
 
+  // 创建标题容器（增加高度以确保关闭按钮不重叠）
+  const headerContainer = document.createElement('div');
+  headerContainer.style.cssText = `
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    min-height: ${isMobile ? '44px' : '36px'};
+    padding-right: ${isMobile ? '40px' : '36px'};
+    position: relative;
+  `;
+
+  // 标题
+  const title = document.createElement('div');
+  title.textContent = '🔍 页面英文模糊搜索和拼音首字母搜索';
+  title.style.cssText = `
+    font-size: ${isMobile ? '15px' : '14px'};
+    font-weight: bold;
+    color: #333;
+    line-height: 1.4;
+    flex: 1;
+  `;
+  headerContainer.appendChild(title);
+
+  // 关闭按钮
+  const closeButton = document.createElement('button');
+  closeButton.textContent = '✕';
+  closeButton.style.cssText = `
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    border: none;
+    background: #f44336;
+    font-size: ${isMobile ? '20px' : '18px'};
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    padding: 0;
+    width: ${isMobile ? '32px' : '28px'};
+    height: ${isMobile ? '32px' : '28px'};
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+  `;
+  closeButton.setAttribute('aria-label', '关闭搜索');
+
+  closeButton.addEventListener('mouseenter', function() {
+    this.style.backgroundColor = '#d32f2f';
+  });
+
+  closeButton.addEventListener('mouseleave', function() {
+    this.style.backgroundColor = '#f44336';
+  });
+
+  closeButton.addEventListener('click', function() {
+    fswpRemoveSearchInterface();
+  });
+
+  headerContainer.appendChild(closeButton);
+
   // 创建输入框
   const input = document.createElement('input');
   input.addEventListener('input', function() {
@@ -434,7 +498,7 @@ function fswpCreateSearchInterface(parentElement = document.body) {
 
   input.style.width = '100%';
   input.style.padding = '8px 12px';
-  input.style.fontSize = isMobile ? '16px' : '14px'; // 移动端防止自动缩放
+  input.style.fontSize = isMobile ? '16px' : '14px';
   input.style.border = '1px solid #ddd';
   input.style.borderRadius = '4px';
   input.style.outline = 'none';
@@ -469,51 +533,8 @@ function fswpCreateSearchInterface(parentElement = document.body) {
   results.style.overflowY = 'auto';
   results.setAttribute('role', 'list');
 
-  // 关闭按钮
-  const closeButton = document.createElement('button');
-  closeButton.textContent = '✕';
-  closeButton.style.position = 'absolute';
-  closeButton.style.top = isMobile ? '12px' : '8px';
-  closeButton.style.right = isMobile ? '16px' : '16px';
-  closeButton.style.border = 'none';
-  closeButton.style.background = '#f44336';
-  closeButton.style.fontSize = isMobile ? '20px' : '18px';
-  closeButton.style.fontWeight = 'bold';
-  closeButton.style.cursor = 'pointer';
-  closeButton.style.color = 'white';
-  closeButton.style.padding = '0';
-  closeButton.style.width = isMobile ? '32px' : '28px';
-  closeButton.style.height = isMobile ? '32px' : '28px';
-  closeButton.style.borderRadius = '50%';
-  closeButton.style.display = 'flex';
-  closeButton.style.alignItems = 'center';
-  closeButton.style.justifyContent = 'center';
-  closeButton.setAttribute('aria-label', '关闭搜索');
-
-  closeButton.addEventListener('mouseenter', function() {
-    this.style.backgroundColor = '#d32f2f';
-  });
-
-  closeButton.addEventListener('mouseleave', function() {
-    this.style.backgroundColor = '#f44336';
-  });
-
-  closeButton.addEventListener('click', function() {
-    fswpRemoveSearchInterface();
-  });
-
-  // 标题
-  const title = document.createElement('div');
-  title.textContent = '🔍 页面英文模糊搜索和拼音首字母搜索';
-  title.style.fontSize = isMobile ? '15px' : '14px';
-  title.style.fontWeight = 'bold';
-  title.style.marginBottom = '8px';
-  title.style.paddingRight = isMobile ? '40px' : '20px';
-  title.style.color = '#333';
-
   // 组装容器
-  container.appendChild(closeButton);
-  container.appendChild(title);
+  container.appendChild(headerContainer);
   container.appendChild(input);
   container.appendChild(results);
 
